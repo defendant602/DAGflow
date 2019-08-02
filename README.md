@@ -75,11 +75,11 @@ You can run you workflow script as a python script using the following commands.
 ```commandline
 python workflow.py
 ```
-### Re-run your workflow if it was break in the middle
-For some reason, you workflow was broken with some tasks undone.  
+### Re-run your workflow if it breaks in the middle
+For some reason, you workflow broke down with some tasks unfinished
 You can use the same command `python workflow.py`  to re-run the undone jobs.
 ### set dependence between workflow and task
-Sometimes you may want to add a workflow to another workflow, this can be down as following:  
+Sometimes you may want to add a workflow to another workflow, you can do it like this:
 ```python
 from DAGflow import *
 
