@@ -76,8 +76,8 @@ You can run you workflow script as a python script using the following commands.
 python workflow.py
 ```
 ### Re-run your workflow if it breaks in the middle
-For some reason, you workflow broke down with some tasks unfinished
-You can use the same command `python workflow.py`  to re-run the undone jobs.
+For some reason, if your workflow break down with some tasks unfinished,
+you can use the same command `python workflow.py`  to re-run the unfinished jobs.
 ### set dependence between workflow and task
 Sometimes you may want to add a workflow to another workflow, you can do it like this:
 ```python
