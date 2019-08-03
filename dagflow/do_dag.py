@@ -92,11 +92,11 @@ def update_task_status(tasks, stop_on_failure):
 
     for id, task in tasks.items():
 
-        # pass success or failed task
+        # 1--pass success or failed task
         if task.status in ["success", "failed", "waiting"]:
             continue
 
-        # preparing tasks and waiting tasks
+        # 2--check preparing tasks
         if task.status == "preparing":
             # check task depends, if a preparing task's depends submit, change stats to waiting
             dep_status = 1
@@ -111,7 +111,7 @@ def update_task_status(tasks, stop_on_failure):
                 task.status = "waiting"
             continue
 
-        # check recent done tasks on sge
+        # 3--check recent done tasks on sge
         if task.type == "sge" and task.run_id not in sge_running_task:
             status = task.check_done()
 
@@ -130,7 +130,7 @@ def update_task_status(tasks, stop_on_failure):
         else:
             pass
 
-        # check sge tasks running status
+        # 4--check sge tasks running status
         _status = sge_running_task[task.run_id]["status"]
 
         if _status == "Eqw":
@@ -184,7 +184,7 @@ def del_task_hander(signum, frame):
 
 
 def del_online_tasks():
-    LOG.info("delete all running jobs, please wait")
+    LOG.warning("about to delete all running jobs, please wait")
     time.sleep(3)
 
     for id, task in TASKS.items():
@@ -203,17 +203,23 @@ def write_tasks(tasks):
     for id, task in tasks.items():
 
         if task.status != "success":
-            failed_tasks.append(task.id)
+            failed_tasks.append(task)
 
     if failed_tasks:
-        LOG.info("""\
+        LOG.error("""\
 The following tasks were failed:
 %s
-""" % "\n".join([i for i in failed_tasks]))
-        sys.exit("sorry, the program exit with some jobs failed")
+""" % "\n".join([tsk.id + ' : ' + tsk.script_path for tsk in failed_tasks]))
+        sys.exit("Sorry, the program exit with some jobs failed")
+
     else:
-        LOG.info("All jobs were done!")
+        LOG.info("All jobs done!")
         return 0
+
+
+def print_status(status_dict, interval=300):
+    "task status printer"
+    pass
 
 
 def do_dag(dag, concurrent_tasks=10, refresh_time=60, stop_on_failure=False):
@@ -228,8 +234,8 @@ def do_dag(dag, concurrent_tasks=10, refresh_time=60, stop_on_failure=False):
 
     start = time.time()
 
-    LOG.info("DAG: %s, %s tasks" % (dag.id, len(dag.tasks)))
-    LOG.info("Run with %s tasks concurrent and status refreshed per %ss" % (concurrent_tasks, refresh_time))
+    LOG.info("DAG: %s, %s tasks in all." % (dag.id, len(dag.tasks)))
+    LOG.info("Run with %s tasks concurrently and status refreshed per %ss" % (concurrent_tasks, refresh_time))
 
     global TASKS
     TASKS = dag.tasks
@@ -258,7 +264,7 @@ def do_dag(dag, concurrent_tasks=10, refresh_time=60, stop_on_failure=False):
         for id, task in TASKS.items():
             task_status[task.status].append(id)
 
-        info = "job status: %s preparing %s waiting, %s running, %s success, %s failed." % (
+        info = "All tasks status: %s preparing, %s waiting, %s running, %s success, %s failed." % (
             len(task_status["preparing"]),
             len(task_status["waiting"]), len(task_status["running"]),
             len(task_status["success"]), len(task_status["failed"]),
